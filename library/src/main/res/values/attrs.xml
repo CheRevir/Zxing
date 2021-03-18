@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ViewfinderView">
+        <attr name="boundColor" format="color" />
+        <attr name="maskColor" format="color" />
+        <attr name="reactColor" format="color" />
+        <attr name="scanLineColor" format="color" />
+    </declare-styleable>
+</resources>

@@ -32,11 +32,15 @@ public abstract class ImageAnalyzer extends Analyzer {
     private Result analyze(byte[] data, int dataWidth, int dataHeight, Rect rect, ZxingConfig config) {
         Rect rotateRect = new Rect(rect);
         Rect screenAreaRect = config.getScreenAreaRect();
-        if (screenAreaRect != null) {
-            rotateRect.left = rotateRect.left * dataHeight / screenAreaRect.width();
-            rotateRect.right = rotateRect.right * dataHeight / screenAreaRect.width();
-            rotateRect.top = rotateRect.top * dataWidth / screenAreaRect.height();
-            rotateRect.bottom = rotateRect.bottom * dataWidth / screenAreaRect.height();
+        if (screenAreaRect != null && !config.isFullScreenArea()) {
+            float scaleWidth = dataHeight / (float) screenAreaRect.width();
+            float scaleHeight = dataWidth / (float) screenAreaRect.height();
+            rotateRect.left = (int) (rotateRect.left * scaleWidth);
+            rotateRect.right = (int) (rotateRect.right * scaleWidth);
+            rotateRect.top = (int) (rotateRect.top * scaleHeight);
+            rotateRect.bottom = (int) (rotateRect.bottom * scaleHeight);
+        } else {
+            rotateRect.set(0, 0, dataWidth, dataHeight);
         }
         return analyze(rotate(data, dataWidth, dataHeight), dataHeight, dataWidth, rotateRect);
     }
@@ -45,7 +49,7 @@ public abstract class ImageAnalyzer extends Analyzer {
     public abstract Result analyze(@NonNull byte[] data, int dataWidth, int dataHeight, @NonNull Rect rect);
 
     @NonNull
-    public byte[] rotate(@NonNull byte[] data, int width, int height) {
+    protected byte[] rotate(@NonNull byte[] data, int width, int height) {
         byte[] rotatedData = new byte[data.length];
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

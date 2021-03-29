@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="scan_it">扫一扫</string>
+    <string name="flashlight_off">闪关灯：关</string>
+    <string name="flashlight_on">闪关灯：开</string>
+    <string name="photo">相册</string>
 </resources>

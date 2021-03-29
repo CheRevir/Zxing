@@ -4,19 +4,72 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/preview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <com.cere.zxing.view.ViewfinderView
-        android:id="@+id/view_finder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    <include layout="@layout/layout_viewfinder" />
 
     <ImageView
         android:id="@+id/iv"
         android:layout_width="200dp"
         android:layout_height="200dp" />
+
+    <LinearLayout
+        android:id="@+id/activity_capture_flashlight"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="48dp"
+        android:layout_marginBottom="15dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/activity_capture_ib_flashlight"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@null"
+            android:clickable="false"
+            android:padding="12dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_zxing_flashlight_close" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/flashlight_off"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activity_capture_photo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="48dp"
+        android:layout_marginBottom="15dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@null"
+            android:clickable="false"
+            android:padding="12dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_zxing_photo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/photo"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
 
 </FrameLayout>

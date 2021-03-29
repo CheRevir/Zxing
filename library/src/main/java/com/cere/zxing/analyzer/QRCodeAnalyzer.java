@@ -1,18 +1,19 @@
 package com.cere.zxing.analyzer;
 
 import androidx.annotation.NonNull;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageProxy;
 
-import com.cere.logc.LogC;
+import com.cere.zxing.OnBitmapCallback;
+import com.cere.zxing.ZxingConfig;
+import com.google.zxing.DecodeHintType;
+
+import java.util.Map;
 
 /**
  * Created by CheRevir on 2021/3/12
  */
-public class QRCodeAnalyzer implements ImageAnalysis.Analyzer {
-    @Override
-    public void analyze(@NonNull ImageProxy image) {
-        LogC.e(image);
-        image.close();
+public class QRCodeAnalyzer extends MultiFormatAnalyzer {
+
+    public QRCodeAnalyzer(@NonNull ZxingConfig config, @NonNull AnalyzerResultCallback callback, @NonNull Map<DecodeHintType, Object> hints, OnBitmapCallback onBitmapCallback) {
+        super(config, callback, hints, onBitmapCallback);
     }
 }

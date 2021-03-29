@@ -1,10 +1,7 @@
 package com.cere.zxing;
 
-import android.content.Context;
 import android.graphics.Rect;
-import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
@@ -12,14 +9,34 @@ import androidx.annotation.Nullable;
  */
 public class ZxingConfig {
     private Rect mAnalyzerAreaRect;
-    private final Rect mScreenAreaRect = new Rect();
+    private Rect mScreenAreaRect;
     private boolean isFullScreenArea = false;
     private boolean isSupportVertical = true;
     private boolean isSupportLuminanceInvert = true;
+    private boolean isVibrate = true;
+    private boolean isSound = false;
 
-    public ZxingConfig(@NonNull Context context) {
-        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        manager.getDefaultDisplay().getRectSize(mScreenAreaRect);
+    public ZxingConfig setSound(boolean sound) {
+        isSound = sound;
+        return this;
+    }
+
+    public boolean isSound() {
+        return isSound;
+    }
+
+    public ZxingConfig setVibrate(boolean vibrate) {
+        isVibrate = vibrate;
+        return this;
+    }
+
+    public boolean isVibrate() {
+        return isVibrate;
+    }
+
+    public ZxingConfig setScreenAreaRect(Rect screenAreaRect) {
+        mScreenAreaRect = screenAreaRect;
+        return this;
     }
 
     public Rect getScreenAreaRect() {
@@ -63,8 +80,8 @@ public class ZxingConfig {
         return mAnalyzerAreaRect;
     }
 
-    @NonNull
+    /*@NonNull
     public static ZxingConfig getDefaultConfig(@NonNull Context context) {
         return new ZxingConfig(context);
-    }
+    }*/
 }

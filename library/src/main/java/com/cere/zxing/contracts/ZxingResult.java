@@ -14,7 +14,7 @@ import com.cere.zxing.app.CaptureActivity;
  * Created by CheRevir on 2021/3/9
  */
 public class ZxingResult extends ActivityResultContract<Integer, String> {
-    private static final String ZXING_RESULT = "zxing_result";
+    public static final String ZXING_RESULT = "zxing_result";
 
     @NonNull
     @Override

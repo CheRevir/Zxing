@@ -1,13 +1,20 @@
 package com.cere.zxing.app;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Size;
 import android.view.MenuItem;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -26,22 +33,26 @@ import com.cere.zxing.ZxingConfig;
 import com.cere.zxing.analyzer.Analyzer;
 import com.cere.zxing.analyzer.AnalyzerResultCallback;
 import com.cere.zxing.analyzer.MultiFormatAnalyzer;
+import com.cere.zxing.contracts.ZxingResult;
 import com.cere.zxing.view.ViewfinderView;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.zxing.Result;
-import com.google.zxing.ResultPoint;
-import com.google.zxing.ResultPointCallback;
 
+import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 
 /**
  * Created by CheRevir on 2021/3/9
  */
-public class CaptureActivity extends AppCompatActivity implements AnalyzerResultCallback, ResultPointCallback/*, ImageAnalysis.Analyzer*/ {
+public class CaptureActivity extends AppCompatActivity implements AnalyzerResultCallback, ActivityResultCallback<Uri> {
     private ListenableFuture<ProcessCameraProvider> mListenableFuture;
     private Preview mPreview;
     private ImageAnalysis mImageAnalysis;
+    private ImageButton ib_flashlight;
+    private BeepManager mBeepManager;
     private ImageView mImageView;
+
+    private final ActivityResultLauncher<String> mGetContentUri = registerForActivityResult(new ActivityResultContracts.GetContent(), this);
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,24 +61,37 @@ public class CaptureActivity extends AppCompatActivity implements AnalyzerResult
 
         LogC.init(new LogConfig.Builder(this).setEnableSave(true).build());
 
-        LogC.e("OnCreate");
-        Log.e("TAG", "CaptureActivity -> onCreate: ");
+        LogC.e(2 >> 4);
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
         PreviewView previewView = findViewById(R.id.preview);
+        ib_flashlight = findViewById(R.id.activity_capture_ib_flashlight);
+        findViewById(R.id.activity_capture_flashlight).setOnClickListener(view -> {
+
+        });
+        findViewById(R.id.activity_capture_photo).setOnClickListener(view -> {
+            mGetContentUri.launch("image/*");
+        });
+
         mImageView = findViewById(R.id.iv);
         ViewfinderView viewfinderView = findViewById(R.id.view_finder);
 
         Rect rect = new Rect();
         getWindowManager().getDefaultDisplay().getRectSize(rect);
+
         LogC.e(rect);
 
-        ZxingConfig config = new ZxingConfig(this)
+        ZxingConfig config = new ZxingConfig()
+                .setScreenAreaRect(viewfinderView.getRect())
                 .setAnalyzerAreaRect(viewfinderView.getAreaRect())
+                .setSound(true)
                 .setFullScreenArea(false);
+
+        mBeepManager = new BeepManager(this, config, this);
 
         mPreview = new Preview.Builder()
                 .setTargetResolution(new Size(rect.width(), rect.height()))
@@ -80,7 +104,7 @@ public class CaptureActivity extends AppCompatActivity implements AnalyzerResult
                 .build();
         Analyzer analyzer = new MultiFormatAnalyzer(config, this, bitmap -> {
             mImageView.post(() -> {
-                LogC.e(bitmap);
+                // LogC.e(bitmap);
                 mImageView.setImageBitmap(bitmap);
             });
         });
@@ -102,11 +126,27 @@ public class CaptureActivity extends AppCompatActivity implements AnalyzerResult
 
     @Override
     public void onAnalyzerResult(@Nullable Result result) {
-        LogC.e(result);
+        //LogC.e(result);
         if (result != null) {
+            ib_flashlight.post(() -> {
+                mImageAnalysis.clearAnalyzer();
+                mBeepManager.start();
+                setResult(RESULT_OK, new Intent().putExtra(ZxingResult.ZXING_RESULT, result.getText()));
+                finish();
+            });
             mImageView.post(() -> {
                 Toast.makeText(CaptureActivity.this, result.getText(), Toast.LENGTH_SHORT).show();
             });
+        }
+    }
+
+    @Override
+    public void onActivityResult(Uri result) {
+        if (result == null) return;
+        try {
+            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(result));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
@@ -116,10 +156,5 @@ public class CaptureActivity extends AppCompatActivity implements AnalyzerResult
             onBackPressed();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void foundPossibleResultPoint(ResultPoint point) {
-        LogC.e(point);
     }
 }

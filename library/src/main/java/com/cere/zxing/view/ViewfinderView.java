@@ -1,6 +1,7 @@
 package com.cere.zxing.view;
 
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -11,19 +12,20 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
+import com.cere.logc.LogC;
 import com.cere.zxing.R;
 
 /**
  * Created by CheRevir on 2021/3/9
  */
 public class ViewfinderView extends View {
-    private final Rect frame;
+    private final Rect mRect = new Rect();
+    private final Rect mAreaRect = new Rect();
     private int maskColor;
     private int reactColor;
     private int boundColor;
@@ -56,9 +58,9 @@ public class ViewfinderView extends View {
         reactColor = typedArray.getColor(R.styleable.ViewfinderView_reactColor, Color.WHITE);
         scanLineColor = typedArray.getColor(R.styleable.ViewfinderView_scanLineColor, Color.WHITE);
         typedArray.recycle();
-        frame = getFrame(context);
+        // frame = getFrame(context);
         initPoint();
-        initAnimator(frame.top, frame.bottom);
+        //initAnimator(frame.top, frame.bottom);
     }
 
     private void initPoint() {
@@ -103,16 +105,31 @@ public class ViewfinderView extends View {
         }
     }
 
+    @SuppressLint("DrawAllocation")
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        LogC.e(null);
+        mRect.set(0, 0, getMeasuredWidth(), getMeasuredHeight());
+        mAreaRect.set(getFrame(new Point(getMeasuredWidth(), getMeasuredHeight())));
+        LogC.e(mAreaRect);
+        initAnimator(mAreaRect.top, mAreaRect.bottom);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawMaskView(canvas, frame, maskPaint);
-        drawFrameBoundsView(canvas, frame, boundPaint, reactPaint);
-        drawScanLineView(canvas, frame, scanLinePosition, scanLinePaint);
+        drawMaskView(canvas, mAreaRect, maskPaint);
+        drawFrameBoundsView(canvas, mAreaRect, boundPaint, reactPaint);
+        drawScanLineView(canvas, mAreaRect, scanLinePosition, scanLinePaint);
+    }
+
+    public Rect getRect() {
+        return mRect;
     }
 
     public Rect getAreaRect() {
-        return frame;
+        return mAreaRect;
     }
 
     public void setBoundColor(@ColorInt int boundColor) {
@@ -164,10 +181,10 @@ public class ViewfinderView extends View {
         canvas.drawLine(frame.left, position, frame.right, position, paint);
     }
 
-    private Rect getFrame(Context context) {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    private Rect getFrame(Point point) {
+        /*WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Point point = new Point();
-        windowManager.getDefaultDisplay().getSize(point);
+        windowManager.getDefaultDisplay().getSize(point);*/
         int width = (int) (point.x * 0.6);
         int leftOffset = (point.x - width) / 2;
         int topOffset = (point.y - width) / 5;

@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.cere.logc.LogC;
 import com.cere.zxing.OnBitmapCallback;
 import com.cere.zxing.ZxingConfig;
 import com.cere.zxing.decode.DecodeFormatManager;
@@ -49,8 +50,30 @@ public class MultiFormatAnalyzer extends ImageAnalyzer {
     @Override
     public Result analyze(@NonNull byte[] data, int dataWidth, int dataHeight, @NonNull Rect rect) {
         PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(data, dataWidth, dataHeight, rect.left, rect.top, rect.width(), rect.height(), false);
+
+        Result result = decode(source);
+        LogC.e(result);
+        if (result == null && getConfig().isSupportVertical()) {
+            byte[] rotatedData = rotate(data, dataWidth, dataHeight);
+            result = decode(new PlanarYUVLuminanceSource(rotatedData, dataHeight, dataWidth, rect.top, rect.left, rect.height(), rect.width(), false));
+        }
+        LogC.e(result);
+        if (result == null) {
+            PlanarYUVLuminanceSource source1 = new PlanarYUVLuminanceSource(data, dataWidth, dataHeight, 0, 0, dataWidth, dataHeight, false);
+            bitmap(source1);
+            result = decode(source);
+        }
+
+        LogC.e(result);
+        if (result == null && getConfig().isSupportLuminanceInvert()) {
+            result = decode(source.invert());
+        }
+        return result;
+    }
+
+    private void bitmap(PlanarYUVLuminanceSource source) {
         try {
-            byte[] bb= source.getMatrix();
+            byte[] bb = source.getMatrix();
             byte[] bytes = new byte[bb.length * 3];
             System.arraycopy(bb, 0, bytes, 0, bb.length);
             YuvImage yuvImage = new YuvImage(bytes, ImageFormat.NV21, source.getWidth(), source.getHeight(), null);
@@ -63,15 +86,6 @@ public class MultiFormatAnalyzer extends ImageAnalyzer {
             e.printStackTrace();
             Log.e("TAG", "MultiFormatAnalyzer -> analyze: " + e);
         }
-        Result result = decode(source);
-        if (result == null && getConfig().isSupportVertical()) {
-            byte[] rotatedData = rotate(data, dataWidth, dataHeight);
-            result = decode(new PlanarYUVLuminanceSource(rotatedData, dataHeight, dataWidth, rect.left, rect.top, rect.width(), rect.height(), false));
-        }
-        if (result == null && getConfig().isSupportLuminanceInvert()) {
-            result = decode(source.invert());
-        }
-        return result;
     }
 
     private Result decode(LuminanceSource source) {
